@@ -1,0 +1,20 @@
+/target/
+/classes/
+/checkouts/
+profiles.clj
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/.prepl-port
+.cpcache/
+.calva/
+.clj-kondo/.cache/
+.clj-kondo/imports/
+.lsp/.cache/
+# AI-helper files: stow-linked from the settings dotfiles repo, never tracked here.
+CLAUDE.local.md
+/CLAUDE.md
+.claude/

@@ -1,0 +1,159 @@
+name: lint
+
+# Static-analysis required check, mirroring vaelii core's lint.yml: the version strings,
+# kondo, shellcheck, cljfmt formatting, the reflection / auto-boxing ratchet and the prose
+# budget — the same six checks `lein lint` runs locally.
+#
+# Like test.yml, it checks out vaelii core alongside: the reflection step
+# AOT-compiles this artifact's namespaces, which require core (vaelii.core /
+# vaelii.host.*), so core's source + transitive deps must be resolvable. The other
+# five checks are self-contained and don't need core.
+#
+# WHERE CORE COMES FROM: `vaelii/vaelii` with the job's own token, overridable
+# by the repo variable CORE_REPO plus a CORE_REPO_TOKEN secret when core is
+# private. test.yml carries the full reasoning; the two files must agree.
+#
+# EVERY `uses:` IN THIS REPO'S WORKFLOWS IS A COMMIT SHA, with the version in a
+# trailing comment — here and in test.yml, matching vaelii core. A tag is a
+# mutable ref that the action's owner (or anyone who takes that account) can
+# repoint, and a major tag like `v6` moves by design; both workflows here run
+# fork pull requests with actions unrestricted, so a tag is a supply-chain
+# promise made by somebody else's account. A SHA is the artifact itself. The
+# trailing comment names the version the SHA is, for whoever bumps the pin.
+# carve:strip-begin
+#
+# TRIGGERS ARE ADDED AT CUT TIME, exactly as in core's lint.yml. This file says
+# `workflow_dispatch:` — no auto-runs in the private dev repo — and the release
+# carve rewrites it to add push, pull_request and a weekly canary. The rewrite
+# matches the two lines below **exactly**, so do not reformat them, add a comment
+# between them, or give `workflow_dispatch` any inputs: the carve would silently
+# leave CI off, and a public repo running no check on a pull request is the
+# failure this workflow exists to prevent.
+#
+# Everything between these markers is stripped from the released copy.
+# carve:strip-end
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: these jobs only read the repo + run analysis; they never write
+# back. A private-core clone uses its own CORE_REPO_TOKEN PAT, unaffected by this.
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    # WHICH COPY OF THIS FILE RUNS IT: everything on the public repo, the minimal
+    # set on the private copies, and the third clause is what keeps a scheduled
+    # run off one that bills for it and learns nothing a push has not already
+    # said. test.yml's header states the rule, and every job in both files
+    # carries this same `if:`.
+# carve:strip-begin
+#
+# The marker pair sits at column 0 because that is what the carve matches; a
+# comment is indentation-insensitive to YAML, so this reads as part of the job
+# above it either way. What the sentence above declines to name: the private
+# copies are staging and the two dev clones, and the schedule the third clause
+# guards is the weekly canary the carve adds at cut time — a trigger only the
+# released copy of this file has, so the condition is inert in this tree.
+# carve:strip-end
+    if: >-
+      github.repository_owner == 'vaelii'
+      || github.event_name == 'workflow_dispatch'
+      || (github.repository_owner == 'vaelii-admin' && github.event_name != 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout vaelii-agents
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          path: vaelii-agents
+
+      - name: Checkout vaelii core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: ${{ vars.CORE_REPO || 'vaelii/vaelii' }}
+          path: vaelii
+          token: ${{ secrets.CORE_REPO_TOKEN || github.token }}
+          # Don't leave the credential in vaelii/.git/config for the rest of
+          # the job (lein install/check run third-party plugins that could read it).
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Leiningen
+        uses: DeLaGuardo/setup-clojure@4c7a6f613e5089821bb3bb2a33a3ee115578580d  # 13.6.1
+        with:
+          lein: latest
+
+      # kondo runs as a standalone binary (not via lein); install the official release.
+      # `--version` rather than the installer's default, which is *latest*: with no
+      # fixed version, a kondo release turns this workflow red with no change in this
+      # repository, and a linter that infers more each release will eventually flag
+      # something deliberate. Installing it is also this job's widest-reach step — it puts a
+      # binary on the PATH that then reads the tree. The engine names the same version
+      # in its own lint.yml; `scripts/lint.sh` reads this line and says so when the
+      # local binary disagrees, so the two stay together or somebody is told.
+      - name: Install clj-kondo
+        run: |
+          curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+          chmod +x install-clj-kondo
+          sudo ./install-clj-kondo --dir /usr/local/bin --version 2026.08.04
+
+      - name: Cache Maven deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ~/.m2
+          key: m2-${{ hashFiles('vaelii/project.clj', 'vaelii-agents/project.clj') }}
+          # Partial-restore on a project.clj bump instead of a full re-download.
+          restore-keys: |
+            m2-
+
+      # Reuse the project.clj aliases so CI and local stay one source of truth.
+      - name: Version strings
+        working-directory: vaelii-agents
+        run: bash scripts/lint-versions.sh
+
+      - name: Kondo
+        working-directory: vaelii-agents
+        run: lein lint-kondo
+
+      # Mirror the local `lein lint`, which also runs shellcheck over
+      # scripts/. shellcheck is preinstalled on ubuntu-latest.
+      - name: ShellCheck (scripts/)
+        working-directory: vaelii-agents
+        run: shellcheck scripts/*.sh
+
+      - name: Formatting (cljfmt)
+        working-directory: vaelii-agents
+        run: lein lint-cljfmt
+
+      - name: Prose
+        working-directory: vaelii-agents
+        run: lein lint-prose
+
+      # The reflection ratchet AOT-compiles src under *warn-on-reflection*, which
+      # loads core. Install core into ~/.m2 so its transitive deps resolve, then
+      # wire the checkout so `lein check` compiles the checked-out core source.
+      - name: Install vaelii core (for the reflection step's deps)
+        working-directory: vaelii
+        run: lein install
+
+      - name: Wire core into vaelii-agents's checkouts
+        run: |
+          mkdir -p vaelii-agents/checkouts
+          ln -s ../../vaelii vaelii-agents/checkouts/vaelii
+
+      - name: Reflection ratchet
+        working-directory: vaelii-agents
+        run: lein lint-reflect

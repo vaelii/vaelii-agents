@@ -1,0 +1,121 @@
+name: test
+
+# The suite: what `lein test` runs locally.
+#
+# The suite runs IN-REPO against an in-memory KB, with no external service and no
+# matrix. Every provider test runs against the offline stub or a redefined HTTP
+# client, and a test that can reach a model carries `^:llm` and runs only with
+# VAELII_LLM_LIVE set, which no job here sets. What the job needs is core on the
+# classpath, because the tool schemas are generated from the daemon's op table and
+# the tool calls run against a real KB.
+#
+# WHERE CORE COMES FROM: `vaelii/vaelii` with the job's own token, which is what
+# a public repo reading a public repo needs and needs nothing else. A repo whose
+# core is *private* sets two things and changes no file — the repo variable
+# CORE_REPO, naming that repo, and the secret CORE_REPO_TOKEN, a PAT with read
+# access to it.
+#
+# Every `uses:` below is a commit SHA with the version in a trailing comment;
+# lint.yml's header says why a tag is not good enough here.
+#
+# WHICH COPY OF THIS FILE RUNS WHAT. Three repositories carry this tree and they
+# do not get the same CI, because only one of them has free minutes: everything
+# on the public repo, the minimal set on staging, and nothing automatic on the
+# dev copies. Every job below carries the same `if:` saying so — public owner,
+# any event; a dispatch, anywhere, which is how a dev tree runs one on demand;
+# and staging on anything but a cron, since a private repo billing for a weekly
+# canary buys nothing a push has not already told us. It is written on the owner
+# rather than on a branch because the owner is what differs between the copies.
+# A job that is a deep run or a matrix would drop the second and third clauses
+# and be public-only; there is no such job here.
+# carve:strip-begin
+#
+# Written this way round deliberately. The pair was a hard-coded private repo
+# plus a comment saying to drop the `token:` line once core went public, which
+# made the shipped file wrong until somebody remembered a checklist item on the
+# busiest day the project will ever have. Defaulting to the public name inverts
+# that: the file is correct as released, and the private case is the one
+# carrying configuration.
+#
+# TRIGGERS ARE ADDED AT CUT TIME — see the note in lint.yml. The carve matches the
+# two lines below exactly and additionally gives this workflow a `paths-ignore`
+# for docs/ and **.md, so a doc-only change runs lint.yml and not the suite.
+# carve:strip-end
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: the job only reads the repo + runs the suite. A private-core
+# clone uses its own CORE_REPO_TOKEN PAT, unaffected by this.
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    # The tier rule; see the header.
+    if: >-
+      github.repository_owner == 'vaelii'
+      || github.event_name == 'workflow_dispatch'
+      || (github.repository_owner == 'vaelii-admin' && github.event_name != 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout vaelii-agents
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          path: vaelii-agents
+
+      - name: Checkout vaelii core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: ${{ vars.CORE_REPO || 'vaelii/vaelii' }}
+          path: vaelii
+          token: ${{ secrets.CORE_REPO_TOKEN || github.token }}
+          # Don't leave the credential in vaelii/.git/config for the rest of
+          # the job (the suite runs third-party plugins/deps that could read it).
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961  # v5.7.0
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Leiningen
+        uses: DeLaGuardo/setup-clojure@4c7a6f613e5089821bb3bb2a33a3ee115578580d  # 13.6.1
+        with:
+          lein: latest
+
+      - name: Cache Maven deps
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ~/.m2
+          key: m2-${{ hashFiles('vaelii/project.clj', 'vaelii-agents/project.clj') }}
+          restore-keys: |
+            m2-
+
+      # The suite runs against core's `main` rather than the last release: code here
+      # reaches into `vaelii.host.*`, which core is free to change between releases,
+      # so testing against the published jar would find that out one release late.
+      # `lein install` puts core's transitive deps in ~/.m2 (and covers the
+      # development tree, whose dependency is a snapshot Clojars does not carry);
+      # the checkouts link then puts the checked-out source ahead of the jar the
+      # dependency names, as lint.yml's reflection step does.
+      - name: Install vaelii core
+        working-directory: vaelii
+        run: lein install
+
+      - name: Wire core into vaelii-agents's checkouts
+        run: |
+          mkdir -p vaelii-agents/checkouts
+          ln -s ../../vaelii vaelii-agents/checkouts/vaelii
+
+      - name: Run the suite
+        working-directory: vaelii-agents
+        run: lein test

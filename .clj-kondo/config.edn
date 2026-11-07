@@ -1,0 +1,23 @@
+;; clj-kondo configuration for vaelii-agents.
+;;
+;; `vaelii.agents.test-util` drives the tests through binding macros clj-kondo cannot
+;; see into:
+;;
+;;   - deftest-kb  binds `kb`              (a deftest whose body has kb bound)
+;;   - with-terms  binds a vector of temps (with-terms [dog Muffet] …)
+;;
+;; `:lint-as` gives deftest-kb the deftest shape; the `:unresolved-symbol` excludes
+;; cover the names those macros bind inside their own bodies.
+{:lint-as
+ {vaelii.agents.test-util/deftest-kb clojure.test/deftest}
+
+ :linters
+ {:unresolved-symbol
+  {:exclude [(vaelii.agents.test-util/deftest-kb)
+             (vaelii.agents.test-util/with-terms)]}
+
+  ;; Test namespaces `:refer` deftest and drive the KB through `deftest-kb`, which expands
+  ;; to clojure.test/deftest, so the direct refer reads as unused.
+  :unused-referred-var {:exclude {clojure.test [deftest]}}
+
+  :refer-all {:exclude [clojure.test]}}}
