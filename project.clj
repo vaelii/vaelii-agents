@@ -40,7 +40,13 @@
                  [com.taoensso/trove "1.2.0"]
                  ;; The multi-host Ollama pool (`vaelii.agents.llm.pool`): a fixed multiset
                  ;; of host tokens on a channel.
-                 [org.clojure/core.async "1.9.865"]]
+                 [org.clojure/core.async "1.9.865"]
+                 ;; `vaelii.agents.mcp.http-transport`'s Streamable HTTP listener.
+                 ;; Versions match the engine's own ring/jetty pin.
+                 [ring/ring-core "1.15.5"]
+                 [ring/ring-jetty-adapter "1.15.5"]
+                 ;; `vaelii.agents.mcp.transport`'s stdio JSON-RPC loop.
+                 [org.clojure/data.json "2.5.1"]]
   :target-path "target/%s"
   ;; `^:llm` marks a test that can reach a model.  `VAELII_LLM_LIVE=1` is the separate
   ;; consent `vaelii.agents.test-util/live-llm?` reads before any of them dials out.

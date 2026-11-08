@@ -6,6 +6,9 @@
 ;;   - deftest-kb  binds `kb`              (a deftest whose body has kb bound)
 ;;   - with-terms  binds a vector of temps (with-terms [dog Muffet] …)
 ;;
+;; `vaelii.agents.mcp.verbs-test/with-fork` is the same shape: `(with-fork [fk] …)`
+;; binds `fk` to the forked KB for its body.
+;;
 ;; `:lint-as` gives deftest-kb the deftest shape; the `:unresolved-symbol` excludes
 ;; cover the names those macros bind inside their own bodies.
 {:lint-as
@@ -14,7 +17,8 @@
  :linters
  {:unresolved-symbol
   {:exclude [(vaelii.agents.test-util/deftest-kb)
-             (vaelii.agents.test-util/with-terms)]}
+             (vaelii.agents.test-util/with-terms)
+             (vaelii.agents.mcp.verbs-test/with-fork)]}
 
   ;; Test namespaces `:refer` deftest and drive the KB through `deftest-kb`, which expands
   ;; to clojure.test/deftest, so the direct refer reads as unused.

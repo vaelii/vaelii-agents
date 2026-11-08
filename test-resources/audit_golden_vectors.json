@@ -1,0 +1,27 @@
+[
+  {
+    "name": "assert-input-v1",
+    "canonical": "{\"context_edn\":{\"$edn\":\"symbol\",\"value\":\"CxWell\"},\"sentence_edn\":{\"$edn\":\"list\",\"items\":[{\"$edn\":\"symbol\",\"value\":\"dog\"},{\"$edn\":\"symbol\",\"value\":\"Muffet\"}]},\"tag\":\"assert\"}",
+    "sha256": "sha256:cc4fc83d401e4c80f722653239021509a56b49f2a4fdb215d77830c29c1e0868"
+  },
+  {
+    "name": "authenticated-assert-attempt-v1",
+    "canonical": "{\"auth_status\":\"authenticated\",\"correlation_id\":null,\"fork_id\":\"fork-9\",\"input\":{\"context_edn\":{\"$edn\":\"symbol\",\"value\":\"CxWell\"},\"sentence_edn\":{\"$edn\":\"list\",\"items\":[{\"$edn\":\"symbol\",\"value\":\"dog\"},{\"$edn\":\"symbol\",\"value\":\"Muffet\"}]},\"tag\":\"assert\"},\"input_digest\":\"sha256:cc4fc83d401e4c80f722653239021509a56b49f2a4fdb215d77830c29c1e0868\",\"operation_id\":\"123e4567-e89b-12d3-a456-426614174000\",\"principal\":\"agent:quill\",\"record_type\":\"attempt\",\"schema_version\":1,\"session_id\":\"session-7\",\"verb\":\"assert\"}",
+    "sha256": "sha256:23d31ed78ea77fc3ab49cc500c8986d6660624288a9cf955418803d58f232ebe"
+  },
+  {
+    "name": "matching-input-v1",
+    "canonical": "{\"asserted_only\":false,\"context_edn\":{\"$edn\":\"symbol\",\"value\":\"CxWell\"},\"limit\":100,\"pattern_edn\":{\"$edn\":\"list\",\"items\":[{\"$edn\":\"symbol\",\"value\":\"dog\"},{\"$edn\":\"symbol\",\"value\":\"?x\"}]},\"tag\":\"matching\"}",
+    "sha256": "sha256:ae943d32917db37123332a449d2e224b3194a39dedb5846e65fdb540d243887f"
+  },
+  {
+    "name": "authenticated-matching-attempt-v1",
+    "canonical": "{\"auth_status\":\"authenticated\",\"correlation_id\":null,\"fork_id\":\"fork-9\",\"input\":{\"asserted_only\":false,\"context_edn\":{\"$edn\":\"symbol\",\"value\":\"CxWell\"},\"limit\":100,\"pattern_edn\":{\"$edn\":\"list\",\"items\":[{\"$edn\":\"symbol\",\"value\":\"dog\"},{\"$edn\":\"symbol\",\"value\":\"?x\"}]},\"tag\":\"matching\"},\"input_digest\":\"sha256:ae943d32917db37123332a449d2e224b3194a39dedb5846e65fdb540d243887f\",\"operation_id\":\"123e4567-e89b-12d3-a456-426614174000\",\"principal\":\"agent:quill\",\"record_type\":\"attempt\",\"schema_version\":1,\"session_id\":\"session-7\",\"verb\":\"matching\"}",
+    "sha256": "sha256:67e7e8c87da2d060d2a354bcf13977ea3ed32ac7503f6481ce5e586c602fd6d0"
+  },
+  {
+    "name": "matching-completion-v1",
+    "canonical": "{\"operation_id\":\"123e4567-e89b-12d3-a456-426614174000\",\"outcome\":{\"effect\":\"none\",\"result_summary\":{\"row_count\":1,\"tag\":\"matching\",\"truncated\":false},\"tag\":\"succeeded\"},\"record_type\":\"completion\",\"schema_version\":1}",
+    "sha256": "sha256:3b919678a4131fc976845584a0d8de3c7aa51b7fa0d6010dda2fdf2cc73e27c6"
+  }
+]
