@@ -8,7 +8,7 @@ A breaking change here is one to a public var's arglists or return shape, to the
 `Provider` protocol's method set (`vaelii.agents.surface-test` freezes it), to an
 environment variable's name or unset default, or to the set of tools a model is offered.
 
-## 0.32.0 — Unreleased — "model-provider clients and generated KB read tools, outside the engine"
+## 0.32.0 — 2026-11-08 — "model-provider clients and generated KB read tools, outside the engine"
 
 ### Added
 
