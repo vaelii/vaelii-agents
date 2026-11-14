@@ -8,7 +8,28 @@ A breaking change here is one to a public var's arglists or return shape, to the
 `Provider` protocol's method set (`vaelii.agents.surface-test` freezes it), to an
 environment variable's name or unset default, or to the set of tools a model is offered.
 
-## 0.32.0 — Unreleased — "model-provider clients and generated KB read tools, outside the engine"
+## 0.33.0 — 2026-11-10 — "an MCP server a client writes a fork KB through, and every clocked read tool held to the daemon's ceiling"
+
+Requires core 0.33.0. **2 entries** — 1 Added, 1 Fixed.
+
+### Added
+
+- **An MCP server** (`vaelii.agents.mcp.*`): six verb tools (`assert`, `unassert`,
+  `unassert_handle`, `query`, `argue`, `matching`) a client writes a fork KB through, over
+  stdio or Streamable HTTP, with a durable per-call audit journal and a session/fork
+  authority registry that fences a write against mid-request revocation.
+  ([docs/mcp.md](docs/mcp.md))
+
+### Fixed
+
+- **The eleven read tools that ran under no clock under core 0.32.0 run under the
+  daemon's clock ceiling.** Core 0.33.0, which this release requires, holds `kb_escalate`,
+  `kb_lookup`, `kb_query`, `kb_query_p`, `kb_query_status` and `kb_argue` to the ceiling
+  when a call names no `:max-ms`, and `kb_why_not`, `kb_search_tree`,
+  `kb_compare_tacticians`, `kb_ask_within` and `kb_prove_within` when a call sends no
+  `opts`. This resolves 0.32.0's known limit. ([docs/llm.md § Tools](docs/llm.md#tools))
+
+## 0.32.0 — 2026-11-08 — "model-provider clients and generated KB read tools, outside the engine"
 
 ### Added
 

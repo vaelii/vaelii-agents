@@ -4,7 +4,7 @@
   (Integer/parseInt
    (second (re-find #"^(?:1\.)?(\d+)" (System/getProperty "java.specification.version")))))
 
-(defproject com.vaelii/vaelii-agents "0.32.0"
+(defproject com.vaelii/vaelii-agents "0.33.0"
   :description "Agent-facing code for vaelii: model-provider clients and the KB read
                 tools a model calls, generated from the daemon's op table."
   :url "https://github.com/vaelii/vaelii-agents"
@@ -30,7 +30,7 @@
   ;; `vaelii.host.*` through `vaelii.agents.engine`, which vaelii is free to change; that
   ;; cost is this artifact's to carry.
   :dependencies [[org.clojure/clojure "1.12.6"]
-                 [com.vaelii/vaelii "0.32.0"]
+                 [com.vaelii/vaelii "0.33.0"]
                  ;; Declared here rather than leaned on through the engine, so a change in
                  ;; the engine's dependency list cannot break this repo's load.  cheshire
                  ;; encodes and decodes every provider's wire JSON; trove is the logging
@@ -40,7 +40,13 @@
                  [com.taoensso/trove "1.2.0"]
                  ;; The multi-host Ollama pool (`vaelii.agents.llm.pool`): a fixed multiset
                  ;; of host tokens on a channel.
-                 [org.clojure/core.async "1.9.865"]]
+                 [org.clojure/core.async "1.9.865"]
+                 ;; `vaelii.agents.mcp.http-transport`'s Streamable HTTP listener.
+                 ;; Versions match the engine's own ring/jetty pin.
+                 [ring/ring-core "1.15.5"]
+                 [ring/ring-jetty-adapter "1.15.5"]
+                 ;; `vaelii.agents.mcp.transport`'s stdio JSON-RPC loop.
+                 [org.clojure/data.json "2.5.1"]]
   :target-path "target/%s"
   ;; `^:llm` marks a test that can reach a model.  `VAELII_LLM_LIVE=1` is the separate
   ;; consent `vaelii.agents.test-util/live-llm?` reads before any of them dials out.

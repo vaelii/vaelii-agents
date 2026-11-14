@@ -9,12 +9,22 @@
 [![docstrings](.github/badges/docstrings.svg)](src)
 <!-- badges:end -->
 
-Agent-facing code for [vaelii](https://github.com/vaelii/vaelii): clients for the model
-providers, and the KB read tools a model calls, generated from the engine daemon's op
-table. The engine holds no AI- or model-specific code; this artifact does.
+Agent-facing code for [vaelii](https://github.com/vaelii/vaelii): an MCP server over a
+Vaelii KB, clients for the model providers, and the KB read tools a model calls,
+generated from the engine daemon's op table. The engine holds no AI-, model- or
+protocol-specific code; this artifact does.
 
 | namespace | what it holds |
 |-----------|---------------|
+| `vaelii.agents.mcp.server` | the MCP server's production entry point: startup ordering, custody checks, wiring |
+| `vaelii.agents.mcp.verbs` | the six MCP verb tools (`assert`, `unassert`, `unassert_handle`, `query`, `argue`, `matching`) a client writes a fork KB through |
+| `vaelii.agents.mcp.dispatcher` | transport-neutral JSON-RPC dispatch, the durable audit sink, and effect fencing |
+| `vaelii.agents.mcp.session` | the session/fork/authority registry: durable, linearizable revocation and lease expiry |
+| `vaelii.agents.mcp.audit` | pure v1 audit-record construction, validation, normalization and hashing |
+| `vaelii.agents.mcp.config` | the EDN server-config reader: bearer-token fingerprints to principal/fork identity |
+| `vaelii.agents.mcp.transport` | the stdio JSON-RPC 2.0 transport |
+| `vaelii.agents.mcp.http-transport` | the Streamable HTTP transport and a raw-operation route |
+| `vaelii.agents.mcp.overlay` | an optional directory of extra knowledge loaded into the base KB at server start |
 | `vaelii.agents.llm.protocol` | the `Provider` protocol (`complete`, `stream`) and the neutral request and response maps |
 | `vaelii.agents.llm.provider` | backend selection by keyword, lazily resolved, with the stub as the fallback |
 | `vaelii.agents.llm.stub` | the deterministic, offline default provider, scripted per turn |
@@ -25,13 +35,14 @@ table. The engine holds no AI- or model-specific code; this artifact does.
 | `vaelii.agents.tools` | the model's read tools: schemas generated from the daemon's read ops, and `call`, which dispatches a tool call back through them |
 | `vaelii.agents.engine` | the engine vars outside `vaelii.core` that this repo reads, all in one namespace |
 
-[docs/llm.md](docs/llm.md) documents all of it: the tools, the providers, the environment
-variables and the refusal `:type`s.
+[docs/mcp.md](docs/mcp.md) documents the MCP server: the verbs, the transports, the
+audit journal and the session/fork model. [docs/llm.md](docs/llm.md) documents the model
+providers and the read tools: the environment variables and the refusal `:type`s.
 
 ## Using it
 
-Leiningen `[com.vaelii/vaelii-agents "0.32.0"]`, or deps.edn
-`com.vaelii/vaelii-agents {:mvn/version "0.32.0"}`, from
+Leiningen `[com.vaelii/vaelii-agents "0.33.0"]`, or deps.edn
+`com.vaelii/vaelii-agents {:mvn/version "0.33.0"}`, from
 [Clojars](https://clojars.org/com.vaelii/vaelii-agents). It depends on the engine at the
 version it was cut with, so a project naming only this one gets both.
 

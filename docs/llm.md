@@ -91,20 +91,18 @@ is the caller most likely to name an expensive depth, and a ceiling held only at
 route would not apply to it.
 
 **The engine on the classpath decides which reads the clock holds.** The tools read that
-engine's ceiling tables. Under the 0.32.0 engine release, `kb_escalate` accepts a
-`:max-ms` over the ceiling, and `kb_escalate`, `kb_lookup`, `kb_query`, `kb_query_p`,
-`kb_query_status` and `kb_argue` run under no clock when the call names no `:max-ms`;
-the last five take no `:max-ms` there. A `kb_why_not`, `kb_search_tree`,
-`kb_compare_tacticians`, `kb_ask_within` or `kb_prove_within` call that sends no `opts`
-runs under no clock under that release too. The engine's `develop` branch holds all
-eleven to the ceiling. CI runs this repo's tests against `develop`, and `kb_escalate`'s
-ceiling test fails against the 0.32.0 jar.
+engine's ceiling tables, and this release requires core 0.33.0, which holds every clocked
+read to the ceiling: `kb_escalate`, `kb_lookup`, `kb_query`, `kb_query_p`,
+`kb_query_status` and `kb_argue` when the call names no `:max-ms`, and `kb_why_not`,
+`kb_search_tree`, `kb_compare_tacticians`, `kb_ask_within` and `kb_prove_within` when it
+sends no `opts`. Under core 0.32.0 those eleven ran under no clock.
 
 ### Where this repo reaches into the engine
 
-`vaelii.agents.engine` reads four vars of `vaelii.host.serve`. The tools read `ops`,
-`kbless-ops` and `write-ops`; the suite reads `feed-ops`, to check that no change-feed op is
-a tool.
+The tools reach the engine through four vars of `vaelii.host.serve` that
+`vaelii.agents.engine` holds. The tools read `ops`, `kbless-ops` and `write-ops`; the
+suite reads `feed-ops`, to check that no change-feed op is a tool. The MCP server's reach
+is [docs/mcp.md § Engine reach](mcp.md#engine-reach).
 `vaelii.host.*` is private to the engine, which may change it in any release.
 `vaelii.agents.engine` holds every such reach, so an engine change that moves one is
 repaired in that one namespace. A new namespace here that needs an engine var outside
