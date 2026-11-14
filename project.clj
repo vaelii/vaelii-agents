@@ -4,7 +4,7 @@
   (Integer/parseInt
    (second (re-find #"^(?:1\.)?(\d+)" (System/getProperty "java.specification.version")))))
 
-(defproject com.vaelii/vaelii-agents "0.32.1-SNAPSHOT"
+(defproject com.vaelii/vaelii-agents "0.33.1-SNAPSHOT"
   :description "Agent-facing code for vaelii: model-provider clients and the KB read
                 tools a model calls, generated from the daemon's op table."
   :url "https://github.com/vaelii/vaelii-agents"
