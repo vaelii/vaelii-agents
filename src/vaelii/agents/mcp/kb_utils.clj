@@ -45,7 +45,7 @@
         except (when h (list 'except (v/sentex-handle h)))
         prior  (when h (v/handle-of kb except except-context))]
     (cond
-      (and prior (v/in? kb prior))
+      (and prior (v/believed? kb prior))
       (assoc asked :status :already :handle h :except-handle prior)
 
       h

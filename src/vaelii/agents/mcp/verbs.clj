@@ -442,7 +442,7 @@
                            (locking assert-lock
                              (check-declared-predicates! kb sentence context)
                              (let [existing-handle (v/handle-of kb sentence context)
-                                   already?       (and existing-handle (v/in? kb existing-handle))]
+                                   already?       (and existing-handle (v/believed? kb existing-handle))]
                                (if already?
                                  {:handle existing-handle :already_there true}
                                  (do
@@ -548,13 +548,10 @@
         (if-not sx
           ;; Unknown handle
           (mcp-error "not_found" (str "no sentex at handle " h))
-          ;; Check if already not visible — JTMS out, or already excepted.
-          ;; `in?` alone is not enough: an excepted fact is still IN in the JTMS
-          ;; but invisible to reads.  Check visibility via sentexes-matching.
+          ;; `believed?` at the sentex's own context is false when it is OUT,
+          ;; excepted or defeated there.
           (let [ctx     (or (:context sx) 'CxUniverse)
-                visible (and (v/in? kb h)
-                             (seq (filter #(= h (:id %))
-                                          (v/sentexes-matching kb (v/sentence-of sx) ctx))))]
+                visible (v/believed? kb h)]
             (if-not visible
               ;; Already withdrawn (excepted, defeated, or absent)
               {:excepting_handle nil}

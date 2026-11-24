@@ -4,7 +4,7 @@
   (Integer/parseInt
    (second (re-find #"^(?:1\.)?(\d+)" (System/getProperty "java.specification.version")))))
 
-(defproject com.vaelii/vaelii-agents "0.33.0"
+(defproject com.vaelii/vaelii-agents "0.35.0"
   :description "Agent-facing code for vaelii: model-provider clients and the KB read
                 tools a model calls, generated from the daemon's op table."
   :url "https://github.com/vaelii/vaelii-agents"
@@ -30,7 +30,7 @@
   ;; `vaelii.host.*` through `vaelii.agents.engine`, which vaelii is free to change; that
   ;; cost is this artifact's to carry.
   :dependencies [[org.clojure/clojure "1.12.6"]
-                 [com.vaelii/vaelii "0.33.0"]
+                 [com.vaelii/vaelii "0.35.0"]
                  ;; Declared here rather than leaned on through the engine, so a change in
                  ;; the engine's dependency list cannot break this repo's load.  cheshire
                  ;; encodes and decodes every provider's wire JSON; trove is the logging
@@ -60,9 +60,13 @@
   ;; restores `:base`'s `-XX:-OmitStackTraceInFastThrow` so a test failure names its
   ;; site. The two `--` flags silence the JDK 24+ warnings for JNA's native loads and
   ;; aircompressor's (nippy LZ4) `sun.misc.Unsafe` calls; the Unsafe flag exists from
-  ;; 23, and 21 refuses to boot with it. Core's project.clj has the detail.
+  ;; 23, and 21 refuses to boot with it. `-Xmx8g` caps the heap, which is otherwise a
+  ;; quarter of physical memory. A `JVM_OPTS` naming `-Xmx` keeps its own heap, because
+  ;; leiningen places `JVM_OPTS` before these flags and the JVM takes the last `-Xmx`.
+  ;; Core's project.clj has the detail.
   :jvm-opts ~(cond-> ["-XX:-OmitStackTraceInFastThrow" "--enable-native-access=ALL-UNNAMED"]
-               (<= 23 jdk-major) (conj "--sun-misc-unsafe-memory-access=allow"))
+               (<= 23 jdk-major) (conj "--sun-misc-unsafe-memory-access=allow")
+               (not (re-find #"-Xmx" (str (System/getenv "JVM_OPTS")))) (conj "-Xmx8g"))
   ;; Same as the engine's: an unhinted interop call is a build-time failure rather than
   ;; a reflective lookup paid at runtime.
   :global-vars {*warn-on-reflection* true}

@@ -30,7 +30,7 @@
    Returns nil if not stored or not believed."
   [kb sentence context]
   (when-let [h (v/handle-of kb sentence context)]
-    (when (v/in? kb h)
+    (when (v/believed? kb h)
       (v/why kb h))))
 
 (defn- defeat-class-of

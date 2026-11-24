@@ -8,6 +8,31 @@ A breaking change here is one to a public var's arglists or return shape, to the
 `Provider` protocol's method set (`vaelii.agents.surface-test` freezes it), to an
 environment variable's name or unset default, or to the set of tools a model is offered.
 
+## 0.35.0 — 2026-11-24 — "the read tools of core 0.35.0, and MCP verbs that read belief"
+
+Requires core 0.35.0, and every read tool answers as core 0.35.0 does (its changelog lists
+22 Breaking entries). **3 entries** — 1 Removed (breaking), 1 Changed, 1 Added.
+
+### Removed
+
+- **`kb_in_p`.** Core 0.35.0 drops `in?` from its API, so the tool set a model is offered
+  loses `kb_in_p`. *Migration:* call `kb_believed_p`, which answers whether a handle is
+  believed at the context it is stored in. ([docs/llm.md § Tools](docs/llm.md#tools))
+
+### Changed
+
+- **The MCP verbs read belief through core's `believed?`, not the JTMS IN label.** An
+  excepted or defeated sentex is not believed: `argue` cites no justification for it,
+  `assert` asserts it again rather than answering `already_there`, and `unassert` writes
+  an `except` again when the stored one is not believed.
+  ([docs/mcp.md § The six verbs](docs/mcp.md#the-six-verbs))
+
+### Added
+
+- **Five read tools from core's read ops**: `kb_answer_sets`, `kb_check_term_edit`,
+  `kb_sign_reading`, `kb_stored_lengths` and `kb_term_edit_plan`.
+  ([docs/llm.md § Tools](docs/llm.md#tools))
+
 ## 0.33.0 — 2026-11-10 — "an MCP server a client writes a fork KB through, and every clocked read tool held to the daemon's ceiling"
 
 Requires core 0.33.0. **2 entries** — 1 Added, 1 Fixed.

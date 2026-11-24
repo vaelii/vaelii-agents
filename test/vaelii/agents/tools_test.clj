@@ -106,7 +106,7 @@
         (is (str/includes? result (str Muffet)))))
     (testing "an integer parameter arrives as an integer"
       (let [h (v/handle-of kb (list dog Muffet) 'CxUniverse)
-            {:keys [ok result]} (tools/call kb "kb_in_p" {"handle" h})]
+            {:keys [ok result]} (tools/call kb "kb_believed_p" {"handle" h})]
         (is ok)
         (is (= "true" result))))
     (testing "escalate climbs from an integer floor under the daemon's clock ceiling"

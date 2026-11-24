@@ -41,8 +41,8 @@ providers and the read tools: the environment variables and the refusal `:type`s
 
 ## Using it
 
-Leiningen `[com.vaelii/vaelii-agents "0.33.0"]`, or deps.edn
-`com.vaelii/vaelii-agents {:mvn/version "0.33.0"}`, from
+Leiningen `[com.vaelii/vaelii-agents "0.35.0"]`, or deps.edn
+`com.vaelii/vaelii-agents {:mvn/version "0.35.0"}`, from
 [Clojars](https://clojars.org/com.vaelii/vaelii-agents). It depends on the engine at the
 version it was cut with, so a project naming only this one gets both.
 
